@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id        String    @id @default(cuid())
+  key       String    @unique
+  label     String    @unique
+  isActive  Boolean   @default(true)
+  users     User[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Format {
+  id        String    @id @default(cuid())
+  key       String    @unique
+  label     String?
+  isActive  Boolean   @default(true)
+  books     Book[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model BookStatus {
+  id        String    @id @default(cuid())
+  key       String
+  label     String?
+  isActive  Boolean   @default(true)
+  books     Book[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Language {
+  id        String    @id @default(cuid())
+  key       String    @unique
+  label     String?
+  isActive  Boolean   @default(true)
+  books     Book[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Translator {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  isActive  Boolean   @default(true)
+  books     Book[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Book {
+  id              String           @id @default(cuid())
+  title           String           @unique
+  isbn            String           @unique
+  publishingDate  DateTime
+  publisherId     String
+  pageCount       Int
+  formatId        String
+  languageId      String
+  summary         String?
+  translatorId    String?
+  edition         Int
+  createdAt       DateTime         @default(now())
+  createdById     String
+  updatedAt       DateTime?
+  updatedById     String?
+  bookStatusId    String
+  isActive        Boolean
+  barcodes        Barcode[]
+  bookStatus      BookStatus       @relation(fields: [bookStatusId], references: [id])
+  updatedByUser   User?            @relation("UpdatedByUser", fields: [updatedById], references: [id])
+  createdBy       User             @relation("CreatedByUser", fields: [createdById], references: [id])
+  translator      Translator?      @relation(fields: [translatorId], references: [id])
+  language        Language         @relation(fields: [languageId], references: [id])
+  format          Format           @relation(fields: [formatId], references: [id])
+  publisher       Publisher        @relation(fields: [publisherId], references: [id])
+  borrowedBooks   BorrowedBook[]   @relation("BookBorrowedBooks")
+  recommendations Recommendation[]
+  reviews         Review[]
+  authors         Author[]         @relation("BookAuthors")
+  categories      Category[]       @relation("BookCategories")
+
+  @@index([isbn])
+}
+
+model User {
+  id              String           @id @default(cuid())
+  username        String           @unique
+  email           String           @unique
+  password        String
+  firstName       String
+  lastName        String
+  profilePicture  String?
+  roleId          String
+  lastLogin       DateTime?
+  isActive        Boolean          @default(true)
+  AuditLog        AuditLog[]
+  booksUpdated    Book[]           @relation("UpdatedByUser")
+  booksCreated    Book[]           @relation("CreatedByUser")
+  borrowedBooks   BorrowedBook[]   @relation("UserBorrowedBooks")
+  recommendations Recommendation[]
+  reviews         Review[]
+  role            Role             @relation(fields: [roleId], references: [id])
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime?        @updatedAt
+
+  @@index([email])
+}
+
+model Publisher {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  isActive  Boolean   @default(true)
+  books     Book[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  isActive  Boolean   @default(true)
+  books     Book[]    @relation("BookCategories")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Author {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  isActive  Boolean   @default(true)
+  books     Book[]    @relation("BookAuthors")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Review {
+  id           String    @id @default(cuid())
+  bookId       String
+  userId       String
+  rating       Int
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime? @updatedAt
+  isApproved   Boolean   @default(false)
+  approvalDate DateTime?
+  isActive     Boolean   @default(false)
+  user         User      @relation(fields: [userId], references: [id])
+  book         Book      @relation(fields: [bookId], references: [id])
+}
+
+model Barcode {
+  id            String         @id @default(cuid())
+  code          String         @unique
+  bookId        String
+  isActive      Boolean        @default(true)
+  book          Book           @relation(fields: [bookId], references: [id])
+  borrowedBooks BorrowedBook[] @relation("BarcodeBorrowedBooks")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime?      @updatedAt
+}
+
+model BorrowedBook {
+  id         String    @id @default(cuid())
+  barcodeId  String
+  bookId     String
+  userId     String
+  borrowedAt DateTime  @default(now())
+  dueDate    DateTime
+  returnDate DateTime?
+  fineValue  Float?
+  isActive   Boolean   @default(true)
+  user       User      @relation("UserBorrowedBooks", fields: [userId], references: [id])
+  book       Book      @relation("BookBorrowedBooks", fields: [bookId], references: [id])
+  barcode    Barcode   @relation("BarcodeBorrowedBooks", fields: [barcodeId], references: [id])
+}
+
+model Recommendation {
+  id        String   @id @default(cuid())
+  bookId    String
+  userId    String
+  reason    String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  book      Book     @relation(fields: [bookId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  entity    String
+  entityId  String
+  action    String
+  timestamp DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model PenaltyRule {
+  id          String    @id @default(cuid())
+  description String
+  finePerDay  Float
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+}

@@ -13,6 +13,14 @@ export async function getAuthors() {
     });
 }
 
+export async function getAuthorsBySlug(slug: string) {
+    return await prisma.author.findUnique({
+        where: {
+            slug,
+        },
+    });
+}
+
 export async function countAuthors() {
     return await prisma.author.count();
 }

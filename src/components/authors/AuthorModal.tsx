@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState } from "react";
 import { useActionState } from "react";
@@ -6,11 +6,19 @@ import { createAuthor } from "@/actions/author/actions";
 import { Author } from "@prisma/client";
 import Form from "next/form";
 
-export default function AuthorModal({ onAuthorCreated }: { onAuthorCreated: (author: Author) => void }) {
-    const [isOpen, setIsOpen] = useState(false);
+export default function AuthorModal({
+    isOpen,
+    closeModal,
+    onAuthorCreated
+}: {
+    isOpen: boolean,
+    closeModal: () => void,
+    onAuthorCreated: (author: Author) => void
+}) {
+
     const [error, setError] = useState<string | null>(null);
 
-    const createPostAction = async (_state: any, formData: FormData) => {
+    const createAuthorAction = async (_state: any, formData: FormData) => {
         try {
             const author = await createAuthor(formData);
             onAuthorCreated(author);
@@ -20,25 +28,10 @@ export default function AuthorModal({ onAuthorCreated }: { onAuthorCreated: (aut
         }
     };
 
-    const [state, formAction] = useActionState(createPostAction, null);
-
-    function openModal() {
-        setIsOpen(true);
-    }
-
-    function closeModal() {
-        setIsOpen(false);
-        setError(null);
-    }
-
-
+    const [state, formAction] = useActionState(createAuthorAction, null);
 
     return (
         <>
-            <button onClick={openModal} className="bg-green-500 py-2 px-4 text-sm text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">
-                Adicionar Autor
-            </button>
-
             {isOpen && (
                 <div className="fixed inset-0 flex items-center justify-center backdrop-blur-md z-50">
                     <div className="bg-white p-6 rounded-lg shadow-lg w-[300px] relative">
@@ -74,6 +67,5 @@ export default function AuthorModal({ onAuthorCreated }: { onAuthorCreated: (aut
                 </div>
             )}
         </>
-
     );
 }

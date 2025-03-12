@@ -28,26 +28,15 @@ export async function fetchAuthorsCount() {
 }
 
 export async function createAuthor(formData: FormData) {
-    const name = formData.get("name") as string;
 
-    if (!name || name.trim() === "") {
-        throw new Error("Nome do autor é obrigatório");
-    }
-
-    const slug = slugify(name, { lower: true });
-
-    const author = await prisma.author.create({
+    await prisma.author.create({
         data: {
-            name,
-            slug,
-            isActive: true,
+            name: formData.get("name") as string,
+            slug: slugify(formData.get("name") as string, { lower: true })
         }
     });
 
-    // Revalidar a página para atualizar os dados
-    /* revalidatePath('/authors'); */
-
-    return author;
+    revalidatePath('/authors');
 }
 
 export async function updateAuthorName(id: string, newName: string) {

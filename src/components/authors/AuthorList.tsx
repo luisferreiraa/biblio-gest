@@ -11,22 +11,6 @@ export default function AuthorList({ authors }: { authors: Author[] }) {
     const [baseAuthors, setBaseAuthors] = useState(authors);
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredAuthors, setFilteredAuthors] = useState(authors);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-
-    // Atualizar o estado de autores com o novo autor
-    const handleAuthorCreated = (newAuthor: Author) => {
-        setBaseAuthors((prev) => [newAuthor, ...prev]); // Adicionar o novo autor ao estado
-    };
-
-    // Função para abrir o modal
-    function openModal() {
-        setIsModalOpen(true);
-    }
-
-    // Função para fechar o modal
-    function closeModal() {
-        setIsModalOpen(false);
-    }
 
     // Função para deletar o autor
     const handleDelete = async (id: string) => {
@@ -35,11 +19,6 @@ export default function AuthorList({ authors }: { authors: Author[] }) {
             setBaseAuthors(baseAuthors.filter((author) => author.id !== id)); // Atualiza a lista após a exclusão
         } catch (error) {
             console.log("Erro ao excluir autor:", error);
-            toast({
-                title: "Erro ao excluir autor",
-                description: "Não foi possível excluir o autor. Tente novamente.",
-                variant: "destructive",
-            });
         }
     };
 
@@ -68,24 +47,8 @@ export default function AuthorList({ authors }: { authors: Author[] }) {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
-
-                    <button
-                        onClick={openModal}
-                        className="bg-green-500 py-2 px-4 text-sm text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF">
-                            <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
-                        </svg>
-                    </button>
                 </div>
             </div>
-
-            {/* Modal */}
-            <AuthorModal
-                isOpen={isModalOpen}
-                closeModal={closeModal}
-                onAuthorCreated={handleAuthorCreated}
-            />
 
             {/* Tabela */}
             <div className="mt-3 px-6">

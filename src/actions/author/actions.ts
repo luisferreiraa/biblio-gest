@@ -45,16 +45,22 @@ export async function createAuthor(formData: FormData) {
     });
 
     // Revalidar a página para atualizar os dados
-    revalidatePath('/authors');
+    /* revalidatePath('/authors'); */
 
     return author;
 }
 
 export async function updateAuthorName(id: string, newName: string) {
+
+    const newSlug = slugify(newName, { lower: true })
+
     try {
         const updatedAuthor = await prisma.author.update({
             where: { id },
-            data: { name: newName },
+            data: {
+                name: newName,
+                slug: newSlug
+            },
         });
         return updatedAuthor;
     } catch (error) {

@@ -1,49 +1,60 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { Author } from "@prisma/client";
-import Link from "next/link";
 import { deleteAuthor } from "@/actions/author/actions";
 import AuthorModal from "./AuthorModal";
+import { toast } from "@/hooks/use-toast";
+import Link from "next/link";
 
 export default function AuthorList({ authors }: { authors: Author[] }) {
-    const [authorList, setAuthorList] = useState(authors);
+    const [baseAuthors, setBaseAuthors] = useState(authors);
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredAuthors, setFilteredAuthors] = useState(authors);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    useEffect(() => {
-        if (searchTerm === "") {
-            setFilteredAuthors(authorList);
-        } else {
-            setFilteredAuthors(
-                authorList.filter((author) =>
-                    author.name.toLowerCase().includes(searchTerm.toLowerCase())
-                )
-            );
-        }
-    }, [searchTerm, authorList]);
+    // Atualizar o estado de autores com o novo autor
+    const handleAuthorCreated = (newAuthor: Author) => {
+        setBaseAuthors((prev) => [newAuthor, ...prev]); // Adicionar o novo autor ao estado
+    };
 
+    // Função para abrir o modal
     function openModal() {
         setIsModalOpen(true);
     }
 
+    // Função para fechar o modal
     function closeModal() {
         setIsModalOpen(false);
     }
 
-    const handleAuthorCreated = (newAuthor: Author) => {
-        setAuthorList((prevAuthors) => [newAuthor, ...prevAuthors]);
-    };
-
+    // Função para deletar o autor
     const handleDelete = async (id: string) => {
         try {
-            await deleteAuthor(id); // Chama a API para deletar o autor
-            setAuthorList((prevAuthors) => prevAuthors.filter(author => author.id !== id)); // Atualiza o estado
+            await deleteAuthor(id);
+            setBaseAuthors(baseAuthors.filter((author) => author.id !== id)); // Atualiza a lista após a exclusão
         } catch (error) {
-            console.error("Erro ao excluir autor:", error);
+            console.log("Erro ao excluir autor:", error);
+            toast({
+                title: "Erro ao excluir autor",
+                description: "Não foi possível excluir o autor. Tente novamente.",
+                variant: "destructive",
+            });
         }
     };
+
+    // Filtrar autores com base no termo de pesquisa
+    useEffect(() => {
+        if (searchTerm === "") {
+            setFilteredAuthors(baseAuthors);
+        } else {
+            setFilteredAuthors(
+                baseAuthors.filter((author) =>
+                    author.name.toLowerCase().includes(searchTerm.toLowerCase())
+                )
+            );
+        }
+    }, [searchTerm, baseAuthors]);
 
     return (
         <div className="w-full h-screen bg-gray-50">
@@ -70,7 +81,11 @@ export default function AuthorList({ authors }: { authors: Author[] }) {
             </div>
 
             {/* Modal */}
-            <AuthorModal isOpen={isModalOpen} closeModal={closeModal} onAuthorCreated={handleAuthorCreated} />
+            <AuthorModal
+                isOpen={isModalOpen}
+                closeModal={closeModal}
+                onAuthorCreated={handleAuthorCreated}
+            />
 
             {/* Tabela */}
             <div className="mt-3 px-6">

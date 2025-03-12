@@ -1,8 +1,11 @@
 @import "tailwindcss";
+@import "@fontsource/roboto";
+
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --font-sans: "Roboto", sans-serif;
 }
 
 @theme inline {
@@ -14,7 +17,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #F9FAFB;
     --foreground: #ededed;
   }
 }

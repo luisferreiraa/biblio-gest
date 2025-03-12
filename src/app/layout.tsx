@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import NavbarAdmin from "@/components/NavBarAdmin";
+import { Toaster } from "@/components/ui/toast";
+import { NavbarAdmin } from "@/components/NavBarAdmin";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,9 +22,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {/* NavbarAdmin só renderiza no cliente */}
         <NavbarAdmin />
         {children}
+        <Toaster />
       </body>
     </html>
   );
